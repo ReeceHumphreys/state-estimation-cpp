@@ -6,7 +6,7 @@ add_executable(test_running_average
 )
 target_link_libraries(test_running_average
     PRIVATE
-        filters::filters
+        se::se
         Catch2::Catch2WithMain
 )
 
@@ -16,7 +16,7 @@ add_executable(test_kalman
 )
 target_link_libraries(test_kalman
     PRIVATE
-        filters::filters
+        se::se
         Catch2::Catch2WithMain
 )
 
