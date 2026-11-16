@@ -13,7 +13,7 @@ template <typename T> struct RunningAverage {
 
     T process(T x) {
         ++count;
-        mean += (x - mean) / count;
+        mean += (x - mean) / static_cast<T>(count);
         return mean;
     }
 
@@ -24,7 +24,7 @@ template <typename T> struct RunningAverage {
 
   private:
     T mean = T{};
-    T count = T{};
+    std::uint64_t count = 0; // a float count stops incrementing at 2^24
 };
 
 template <typename T, std::uint32_t N> struct MovingAverage {
@@ -32,18 +32,15 @@ template <typename T, std::uint32_t N> struct MovingAverage {
     static_assert(std::is_floating_point_v<T>, "T must be floating point");
     static_assert(N > 0, "N must be greater than zero");
 
-    RingBuffer<T, N> buffer;
-    T sum = {};
-
     T process(T value) {
         const T outgoing = buffer.push(value);
         sum += value;
 
-        if (buffer.size == N) {
+        if (buffer.size() == N) {
             sum -= outgoing;
             return sum / static_cast<T>(N);
         } else {
-            return sum / static_cast<T>(buffer.size);
+            return sum / static_cast<T>(buffer.size());
         }
     }
 
@@ -51,6 +48,10 @@ template <typename T, std::uint32_t N> struct MovingAverage {
         buffer.reset();
         sum = T{};
     }
+
+  private:
+    data_structures::RingBuffer<T, N> buffer;
+    T sum = {};
 };
 
 template <typename T> struct ExponentialMovingAverage {

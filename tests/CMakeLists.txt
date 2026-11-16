@@ -30,9 +30,31 @@ target_link_libraries(test_srif
         Catch2::Catch2WithMain
 )
 
+# Unscented Kalman filter tests
+add_executable(test_ukf
+    test_ukf.cpp
+)
+target_link_libraries(test_ukf
+    PRIVATE
+        se::se
+        Catch2::Catch2WithMain
+)
+
+# Ring buffer tests
+add_executable(test_ring_buffer
+    test_ring_buffer.cpp
+)
+target_link_libraries(test_ring_buffer
+    PRIVATE
+        se::se
+        Catch2::Catch2WithMain
+)
+
 include(CTest)
 include(Catch)
 
 catch_discover_tests(test_running_average)
 catch_discover_tests(test_kalman)
 catch_discover_tests(test_srif)
+catch_discover_tests(test_ukf)
+catch_discover_tests(test_ring_buffer)

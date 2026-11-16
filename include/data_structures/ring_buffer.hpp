@@ -4,53 +4,58 @@
 #include <cassert>
 #include <cstdint>
 
+namespace data_structures {
+
+/// Fixed-capacity ring buffer: push() overwrites the oldest element once full.
 template <typename T, std::uint32_t N> struct RingBuffer {
     static_assert(N > 0, "N must be greater than zero");
 
-    std::array<T, N> buffer{};
-    std::uint32_t idx = 0;
-    std::uint32_t size = 0;
-
+    /// Push a value; returns the element it overwrote (T{} while not yet full).
     T push(T value) {
-        T old = buffer[idx];
-        buffer[idx] = value;
+        T old = buffer_[idx_];
+        buffer_[idx_] = value;
 
-        if (++idx == N)
-            idx = 0;
-        if (size < N)
-            ++size;
+        if (++idx_ == N)
+            idx_ = 0;
+        if (size_ < N)
+            ++size_;
         return old;
     }
 
     void reset() {
-        buffer.fill(T{});
-        idx = 0;
-        size = 0;
+        buffer_.fill(T{});
+        idx_ = 0;
+        size_ = 0;
     }
 
+    std::uint32_t size() const {
+        return size_;
+    }
     bool full() const {
-        return size == N;
+        return size_ == N;
     }
     bool empty() const {
-        return size == 0;
+        return size_ == 0;
     }
 
-    // Chronological indexing: i=0 is oldest, i=size-1 is newest
+    /// Chronological indexing: i = 0 is the oldest, i = size() - 1 the newest.
     const T& at_oldest(std::uint32_t i) const {
-        assert(i < size);
-        // oldest element index:
-        const std::uint32_t start = full() ? idx : 0;
-        const std::uint32_t j = start + i;
-        return buffer[(j >= N) ? (j - N) : j];
+        assert(i < size_);
+        const std::uint32_t j = (full() ? idx_ : 0) + i;
+        return buffer_[(j >= N) ? (j - N) : j];
     }
 
-    // Reverse chronological: i=0 newest
+    /// Reverse chronological indexing: i = 0 is the newest.
     const T& at_newest(std::uint32_t i) const {
-        assert(i < size);
-        // newest element is idx-1 (wrap)
-        const std::uint32_t newest = (idx == 0) ? (N - 1) : (idx - 1);
-        const std::int32_t j = static_cast<std::int32_t>(newest) - static_cast<std::int32_t>(i);
-        return buffer[(j < 0) ? (static_cast<std::uint32_t>(j + N))
-                              : static_cast<std::uint32_t>(j)];
+        assert(i < size_);
+        const std::uint32_t newest = (idx_ == 0) ? (N - 1) : (idx_ - 1);
+        return buffer_[(newest >= i) ? (newest - i) : (newest + N - i)];
     }
+
+  private:
+    std::array<T, N> buffer_{};
+    std::uint32_t idx_ = 0;
+    std::uint32_t size_ = 0;
 };
+
+} // namespace data_structures
