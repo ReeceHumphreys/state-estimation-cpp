@@ -20,8 +20,19 @@ target_link_libraries(test_kalman
         Catch2::Catch2WithMain
 )
 
+# Square-root information filter tests
+add_executable(test_srif
+    test_srif.cpp
+)
+target_link_libraries(test_srif
+    PRIVATE
+        se::se
+        Catch2::Catch2WithMain
+)
+
 include(CTest)
 include(Catch)
 
 catch_discover_tests(test_running_average)
 catch_discover_tests(test_kalman)
+catch_discover_tests(test_srif)
